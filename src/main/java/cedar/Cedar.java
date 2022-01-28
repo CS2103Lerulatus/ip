@@ -8,8 +8,9 @@ import java.util.ArrayList;
 import cedar.Config;
 
 public class Cedar {
+    // PS I don't really like writing enterprise-grade code
     protected static boolean activityState = true;
-    protected static ArrayList<String> internalTaskList = new ArrayList<>();
+    protected static ArrayList<Task> internalTaskList = new ArrayList<>();
 
     public static void main(String[] args) throws IOException {
         cedar.Config.printGreeter();
