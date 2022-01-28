@@ -1,20 +1,28 @@
 package cedar;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+
+import cedar.Config;
 
 public class Cedar {
-    public static void main(String[] args) {
-        // consider using classpath over abs_path to avoid packaging issues later on
-        try (BufferedReader br = new BufferedReader(new FileReader("src/main/resources/cedarGreeter.txt"))) {
-            String bannerLines;
-            while ((bannerLines = br.readLine()) != null) {
-                System.out.println(bannerLines);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+    protected static boolean activityState = true;
+    protected static ArrayList<String> internalTaskList = new ArrayList<>();
+
+    public static void main(String[] args) throws IOException {
+        cedar.Config.printGreeter();
+
+        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+        while (activityState) {
+            cedar.Config.prompt();
+            String[] userInput = in.readLine().split(" ");
+            cedar.CliParse.parse(userInput);
         }
+    }
+
+    public static void setActivityState(boolean state) {
+        activityState = state;
     }
 }
