@@ -1,0 +1,15 @@
+plugins {
+    id 'java'
+}
+
+group 'CS2103Lerulatus.ip.Cedar'
+version '0.0.1'
+
+repositories {
+    google()
+    mavenCentral()
+}
+dependencies {
+    implementation 'junit:junit:4.13.2'
+    implementation 'com.google.code.gson:gson:2.8.9'
+}

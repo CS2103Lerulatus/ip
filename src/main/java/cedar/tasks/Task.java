@@ -4,9 +4,13 @@ public abstract class Task {
     protected String desc;
     protected boolean doneState;
 
+    protected String taskType;
+
     public Task(String desc) {
         this.desc = desc;
         this.doneState = false;
+        // works for all subclasses - works and tested: code coverage 100%
+        this.taskType = this.getClass().getSimpleName();
     }
 
     public String getStatusIcon() {
