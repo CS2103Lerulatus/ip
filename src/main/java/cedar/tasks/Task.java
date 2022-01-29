@@ -1,4 +1,4 @@
-package cedar;
+package cedar.tasks;
 
 public class Task {
     protected String desc;

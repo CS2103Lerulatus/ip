@@ -1,6 +1,9 @@
 package cedar;
 
-import cedar.Cedar;
+import cedar.tasks.DeadlineTask;
+import cedar.tasks.EventTask;
+import cedar.tasks.Task;
+import cedar.tasks.TodoTask;
 
 import java.util.Arrays;
 import java.util.stream.Stream;
@@ -33,10 +36,17 @@ public class CliParse {
                 }
                 break;
             case "add":
-                // parse omit first command token
-                String[] content = Arrays.copyOfRange(s, 1, s.length);
+                // deprecated? lmao
+                String[] content = Arrays.copyOfRange(command, 1, command.length);
+                // ^^ bugfix above
                 Cedar.internalTaskList.add(new Task(String.join(" ", content)));
-                System.out.println("Added: " + Arrays.toString(content));
+                System.out.println("Added: " + String.join(" ", content));
+                System.out.format("You currently have %d task(s)\n", Cedar.internalTaskList.size());
+                break;
+            case "todo":
+            case "event":
+            case "deadline":
+                addTaskTypeHandler(command);
                 break;
             case "done":
             case "check":
@@ -50,6 +60,9 @@ public class CliParse {
                     System.out.println("Invalid range.");
                 } else {
                     Cedar.internalTaskList.get(Integer.parseInt(command[1])-1).setState(true);
+                    // wowie simulating human marking effort feels kind of cozy
+                    System.out.format("Nice. I've marked this task as done: %s\n",
+                            Cedar.internalTaskList.get(Integer.parseInt(command[1])-1));
                 }
                 break;
             case "uncheck":
@@ -62,12 +75,65 @@ public class CliParse {
                     System.out.println("Invalid range.");
                 } else {
                     Cedar.internalTaskList.get(Integer.parseInt(command[1])-1).setState(false);
+                    System.out.format("OK, I've marked this task as yet undone: %s\n",
+                            Cedar.internalTaskList.get(Integer.parseInt(command[1])-1));
                 }
                 break;
             default:
                 System.out.println("Unrecognized.");
                 System.out.println("Type \"help\" for a list of available commands.");
         }
+    }
+
+    private static void addTaskTypeHandler(String[] command) {
+        switch (command[0]) {
+            case "todo": {
+                String content = String.join(" ", Arrays.copyOfRange(command, 1, command.length));
+                Cedar.internalTaskList.add(new TodoTask(content));
+                System.out.println("Added a new todo task: " + content);
+                break;
+            }
+        case "event": {
+            if (!Arrays.stream(command).anyMatch("/at"::equals)) {
+                System.out.println("⚠ Error adding event: timestamp /at [date] not found.");
+                return;
+            }
+            String[] content = String.join(" ", Arrays.copyOfRange(command, 1, command.length)).split("\\s*/at\\s*", 2);
+            if (content[0].isBlank()) {
+                System.out.println("⚠ Error: task not found");
+                return;
+            }
+            else if (content[1].isBlank()) {
+                System.out.println("⚠ Error: date not found");
+                return;
+            }
+            Cedar.internalTaskList.add(new EventTask(content[0], content[1]));
+            System.out.format("Added a new Event Task! Attend event [%s] at: %s\n", content[0], content[1]);
+            break;
+        }
+            case "deadline": {
+                if (!Arrays.stream(command).anyMatch("/by"::equals)) {
+                    System.out.println("⚠ Error adding deadline: do /by [date] not found.");
+                    return;
+                }
+                String[] content = String.join(" ", Arrays.copyOfRange(command, 1, command.length)).split("\\s*/by\\s*", 2);
+                if (content[0].isBlank()) {
+                    System.out.println("⚠ Error: task not found");
+                    return;
+                }
+                else if (content[1].isBlank()) {
+                    System.out.println("⚠ Error: date not found");
+                    return;
+                }
+                Cedar.internalTaskList.add(new DeadlineTask(content[0], content[1]));
+                System.out.format("Added a new Deadline Task! Finish [%s] before: %s\n", content[0], content[1]);
+                break;
+            }
+            default:
+                System.out.println("⚠ Error: Nonexistent task type");
+                return;
+        }
+        System.out.format("You currently have %d task(s)\n", Cedar.internalTaskList.size());
     }
 
     public static boolean isInt(String s) {

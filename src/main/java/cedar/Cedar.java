@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
-import cedar.Config;
+import cedar.tasks.Task;
 
 public class Cedar {
     // PS I don't really like writing enterprise-grade code
