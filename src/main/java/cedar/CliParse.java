@@ -35,14 +35,14 @@ public class CliParse {
                 }
             }
             break;
-        case "add":
+        /*case "add":
             // deprecated? lmao
             String[] content = Arrays.copyOfRange(command, 1, command.length);
             // ^^ bugfix above
             Cedar.internalTaskList.add(new Task(String.join(" ", content)));
             System.out.println("Added: " + String.join(" ", content));
             System.out.format("You currently have %d task(s)\n", Cedar.internalTaskList.size());
-            break;
+            break;*/
         case "todo":
         case "event":
         case "deadline":
@@ -77,6 +77,20 @@ public class CliParse {
                 Cedar.internalTaskList.get(Integer.parseInt(command[1]) - 1).setState(false);
                 System.out.format("OK, I've marked this task as yet undone: %s\n",
                         Cedar.internalTaskList.get(Integer.parseInt(command[1]) - 1));
+            }
+            break;
+        case "delete":
+        case "rm":
+            if (!isInt(command[1])) {
+                // if not int
+                System.out.println("Invalid.");
+            } else if (Integer.parseInt(command[1]) > Cedar.internalTaskList.size()) {
+                // if int outside tasks range
+                System.out.println("Invalid range.");
+            } else {
+                System.out.format("Removed this task from records: %s\n",
+                        Cedar.internalTaskList.get(Integer.parseInt(command[1]) - 1));
+                Cedar.internalTaskList.remove(Integer.parseInt(command[1]) - 1);
             }
             break;
         default:
