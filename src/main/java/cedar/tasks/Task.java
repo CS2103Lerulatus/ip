@@ -9,7 +9,7 @@ public abstract class Task {
     public Task(String desc) {
         this.desc = desc;
         this.doneState = false;
-        // works for all subclasses - works and tested: code coverage 100%
+        // works for all subclasses - tested: code coverage 100%
         this.taskType = this.getClass().getSimpleName();
     }
 

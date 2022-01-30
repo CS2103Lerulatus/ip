@@ -4,7 +4,11 @@ import cedar.tasks.DeadlineTask;
 import cedar.tasks.EventTask;
 import cedar.tasks.Task;
 import cedar.tasks.TodoTask;
+import com.google.gson.Gson;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
@@ -47,6 +51,12 @@ public class CliParse {
         case "event":
         case "deadline":
             addTaskTypeHandler(command);
+            try {
+                writeInternalListToJsonHandler();
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.out.println("Error saving tasklist to disk. Check Logs.");
+            }
             break;
         case "done":
         case "check":
@@ -97,6 +107,14 @@ public class CliParse {
             System.out.println("Unrecognized. Check for typo(s) in commands.");
             System.out.println("Type \"help\" for a list of available commands.");
         }
+    }
+
+    private static void writeInternalListToJsonHandler() throws IOException {
+        // consider fixing this filepath to a CONSTANT cuz it will nvr_change4ever
+        Writer writeUserdata = new FileWriter(Cedar.SAVED_USERDATA);
+        new Gson().toJson(Cedar.internalTaskList, writeUserdata);
+        writeUserdata.flush();
+        writeUserdata.close();
     }
 
     private static void addTaskTypeHandler(String[] command) {
