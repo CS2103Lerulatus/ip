@@ -131,7 +131,6 @@ public class CliParse {
                 }
             }
             break;
-        // todo find findtasks findtask etc. done.
         case "searchtasks":
         case "searchtask":
         case "searchkeyword":
