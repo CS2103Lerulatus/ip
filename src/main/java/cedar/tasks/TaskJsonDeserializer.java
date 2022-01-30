@@ -7,6 +7,7 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonObject;
 
 import java.lang.reflect.Type;
+import java.time.LocalDate;
 
 public class TaskJsonDeserializer implements JsonDeserializer<Task> {
 
@@ -23,10 +24,10 @@ public class TaskJsonDeserializer implements JsonDeserializer<Task> {
 
         if("DeadlineTask".equals(type)) {
             typeModel = new DeadlineTask(jsonObject.get("desc").getAsString(),
-                    jsonObject.get("duedate").getAsString());
+                    LocalDate.parse(jsonObject.get("duedate").getAsString()));
         } else if("EventTask".equals(type)) {
             typeModel = new EventTask(jsonObject.get("desc").getAsString(),
-                    jsonObject.get("timestamp").getAsString());
+                    LocalDate.parse(jsonObject.get("timestamp").getAsString()));
         } else {
             typeModel = new TodoTask(jsonObject.get("desc").getAsString());
         }

@@ -12,4 +12,6 @@ repositories {
 dependencies {
     implementation 'junit:junit:4.13.2'
     implementation 'com.google.code.gson:gson:2.8.9'
+    implementation 'org.ocpsoft.prettytime:prettytime:5.0.2.Final'
+    implementation 'org.ocpsoft.prettytime:prettytime-nlp:5.0.2.Final'
 }

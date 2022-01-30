@@ -1,16 +1,22 @@
 package cedar;
 
-import cedar.tasks.DeadlineTask;
-import cedar.tasks.EventTask;
-import cedar.tasks.Task;
-import cedar.tasks.TodoTask;
+import cedar.tasks.*;
 import com.google.gson.Gson;
+
+import com.google.gson.GsonBuilder;
+import org.ocpsoft.prettytime.nlp.PrettyTimeParser;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class CliParse {
@@ -107,16 +113,44 @@ public class CliParse {
         case "nuke":
             Cedar.internalTaskList = new ArrayList<>();
             break;
+        case "searchdate":
+        case "search-date":
+        case "finddate":
+        case "find-date":
+            String languageDate = String.join(" ", Arrays.copyOfRange(command, 1, command.length));
+            LocalDate searchDate = naturalLangDateParseHandler(languageDate);
+            ArrayList<Task> matchingDatesList = Cedar.internalTaskList.stream()
+                    .filter(tasks -> searchDate.equals(tasks.getTemporalLabel()))
+                    .collect(Collectors.toCollection(ArrayList::new));
+            if (matchingDatesList.size() == 0) {
+                System.out.println("🔎 Search returned 0 hits.");
+            } else {
+                System.out.format("🔎 Search returned %d hit(s).\n", matchingDatesList.size());
+                System.out.println("Here are your results:");
+                int index = 1;
+                for (Task task : matchingDatesList) {
+                    //System.out.println((index++)+"%d: "+task);
+                    System.out.format("%d: " + task.toString() + "\n", index++);
+                }
+            }
+            break;
         default:
             System.out.println("Unrecognized. Check for typo(s) in commands.");
             System.out.println("Type \"help\" for a list of available commands.");
         }
     }
 
+    private static LocalDate naturalLangDateParseHandler(String languageDate) {
+        List<Date> dates = new PrettyTimeParser().parse(languageDate);
+        LocalDate date = dates.get(0).toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        return date;
+    }
+
     private static void writeInternalListToJsonHandler() throws IOException {
         // consider fixing this filepath to a CONSTANT cuz it will nvr_change4ever
         Writer writeUserdata = new FileWriter(Cedar.SAVED_USERDATA);
-        new Gson().toJson(Cedar.internalTaskList, writeUserdata);
+        Gson dateJsonSerialize = new GsonBuilder().registerTypeAdapter(LocalDate.class, new LocalDateSerializer()).create();
+        dateJsonSerialize.toJson(Cedar.internalTaskList, writeUserdata);
         writeUserdata.flush();
         writeUserdata.close();
     }
@@ -134,7 +168,8 @@ public class CliParse {
                 System.out.println("⚠ Error adding event: timestamp /at [date] not found.");
                 return;
             }
-            String[] content = String.join(" ", Arrays.copyOfRange(command, 1, command.length)).split("\\s*/at\\s*", 2);
+            String[] content = String.join(" ", Arrays.copyOfRange(command, 1, command.length))
+                    .split("\\s*/at\\s*", 2);
             if (content[0].isBlank()) {
                 System.out.println("⚠ Error: task not found");
                 return;
@@ -142,8 +177,12 @@ public class CliParse {
                 System.out.println("⚠ Error: date not found");
                 return;
             }
-            Cedar.internalTaskList.add(new EventTask(content[0], content[1]));
-            System.out.format("Added a new Event Task! Attend event [%s] at: %s\n", content[0], content[1]);
+            // considering reading date format from an usr-defined .config file
+            LocalDate eventDate = naturalLangDateParseHandler(content[1]);
+            EventTask freshEvent = new EventTask(content[0], eventDate);
+            Cedar.internalTaskList.add(freshEvent);
+            System.out.format("Added a new Event Task! Attend event [%s] at: %s [%s]\n", content[0], content[1],
+                    freshEvent.prettyPrintTimestamp());
             break;
         }
         case "deadline": {
@@ -151,7 +190,8 @@ public class CliParse {
                 System.out.println("⚠ Error adding deadline: do /by [date] not found.");
                 return;
             }
-            String[] content = String.join(" ", Arrays.copyOfRange(command, 1, command.length)).split("\\s*/by\\s*", 2);
+            String[] content = String.join(" ", Arrays.copyOfRange(command, 1, command.length))
+                    .split("\\s*/by\\s*", 2);
             if (content[0].isBlank()) {
                 System.out.println("⚠ Error: task not found");
                 return;
@@ -159,8 +199,11 @@ public class CliParse {
                 System.out.println("⚠ Error: date not found");
                 return;
             }
-            Cedar.internalTaskList.add(new DeadlineTask(content[0], content[1]));
-            System.out.format("Added a new Deadline Task! Finish [%s] before: %s\n", content[0], content[1]);
+            LocalDate deadlineDate = naturalLangDateParseHandler(content[1]);
+            DeadlineTask freshDeadlineTask = new DeadlineTask(content[0], deadlineDate);
+            Cedar.internalTaskList.add(freshDeadlineTask);
+            System.out.format("Added a new Deadline Task! Finish [%s] before: %s [%s]\n", content[0], content[1],
+                    freshDeadlineTask.prettyPrintDuedate());
             break;
         }
         default:
@@ -178,4 +221,5 @@ public class CliParse {
             return false;
         }
     }
+
 }
