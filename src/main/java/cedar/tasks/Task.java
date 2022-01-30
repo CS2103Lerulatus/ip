@@ -1,5 +1,7 @@
 package cedar.tasks;
 
+import java.time.LocalDate;
+
 public abstract class Task {
     protected String desc;
     protected boolean doneState;
@@ -17,6 +19,8 @@ public abstract class Task {
         // wow unicode works
         return (doneState ? "✓" : "☐"); // mark done task with X
     }
+
+    public abstract LocalDate getTemporalLabel();
 
     public void setState(boolean state) {
         this.doneState = state;
