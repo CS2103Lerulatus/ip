@@ -22,6 +22,10 @@ public abstract class Task {
 
     public abstract LocalDate getTemporalLabel();
 
+    public String getDesc() {
+        return this.desc;
+    }
+
     public void setState(boolean state) {
         this.doneState = state;
     }
