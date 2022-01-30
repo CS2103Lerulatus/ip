@@ -9,6 +9,7 @@ import com.google.gson.Gson;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
@@ -102,6 +103,9 @@ public class CliParse {
                         Cedar.internalTaskList.get(Integer.parseInt(command[1]) - 1));
                 Cedar.internalTaskList.remove(Integer.parseInt(command[1]) - 1);
             }
+            break;
+        case "nuke":
+            Cedar.internalTaskList = new ArrayList<>();
             break;
         default:
             System.out.println("Unrecognized. Check for typo(s) in commands.");
