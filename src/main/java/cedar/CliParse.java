@@ -37,7 +37,7 @@ public class CliParse {
         case "ls":
         case "list":
             if (Cedar.internalTaskList.size() == 0) {
-                System.out.println("TodoList is empty");
+                System.out.println("✨ TodoList is empty");
             } else {
                 int index = 1;
                 for (Task task : Cedar.internalTaskList) {
@@ -62,7 +62,7 @@ public class CliParse {
                 writeInternalListToJsonHandler();
             } catch (IOException e) {
                 e.printStackTrace();
-                System.out.println("Error saving tasklist to disk. Check Logs.");
+                System.out.println("⚠ Error saving tasklist to disk. Check Logs.");
             }
             break;
         case "done":
@@ -71,10 +71,10 @@ public class CliParse {
             // I'm sure there are better/faster cli parsers out there than this clumsy block
             if (!isInt(command[1])) {
                 // if not int
-                System.out.println("Invalid.");
+                System.out.println("⚠ Invalid.");
             } else if (Integer.parseInt(command[1]) > Cedar.internalTaskList.size()) {
                 // if int outside tasks range
-                System.out.println("Invalid range.");
+                System.out.println("⚠ Invalid range.");
             } else {
                 Cedar.internalTaskList.get(Integer.parseInt(command[1]) - 1).setState(true);
                 // wowie simulating human marking effort feels kind of cozy
@@ -86,10 +86,10 @@ public class CliParse {
         case "unmark":
             if (!isInt(command[1])) {
                 // if not int
-                System.out.println("Invalid.");
+                System.out.println("⚠ Invalid.");
             } else if (Integer.parseInt(command[1]) > Cedar.internalTaskList.size()) {
                 // if int outside tasks range
-                System.out.println("Invalid range.");
+                System.out.println("⚠ Invalid range.");
             } else {
                 Cedar.internalTaskList.get(Integer.parseInt(command[1]) - 1).setState(false);
                 System.out.format("OK, I've marked this task as yet undone: %s\n",
@@ -100,10 +100,10 @@ public class CliParse {
         case "rm":
             if (!isInt(command[1])) {
                 // if not int
-                System.out.println("Invalid.");
+                System.out.println("⚠ Invalid.");
             } else if (Integer.parseInt(command[1]) > Cedar.internalTaskList.size()) {
                 // if int outside tasks range
-                System.out.println("Invalid range.");
+                System.out.println("⚠ Invalid range.");
             } else {
                 System.out.format("Removed this task from records: %s\n",
                         Cedar.internalTaskList.get(Integer.parseInt(command[1]) - 1));
@@ -112,6 +112,7 @@ public class CliParse {
             break;
         case "nuke":
             Cedar.internalTaskList = new ArrayList<>();
+            System.out.println("✨ Removed all tasks");
             break;
         case "searchdate":
         case "search-date":
@@ -119,19 +120,23 @@ public class CliParse {
         case "find-date":
             String languageDate = String.join(" ", Arrays.copyOfRange(command, 1, command.length));
             LocalDate searchDate = naturalLangDateParseHandler(languageDate);
-            ArrayList<Task> matchingDatesList = Cedar.internalTaskList.stream()
-                    .filter(tasks -> searchDate.equals(tasks.getTemporalLabel()))
-                    .collect(Collectors.toCollection(ArrayList::new));
-            if (matchingDatesList.size() == 0) {
-                System.out.println("🔎 Search returned 0 hits.");
-            } else {
-                System.out.format("🔎 Search returned %d hit(s).\n", matchingDatesList.size());
-                System.out.println("Here are your results:");
-                int index = 1;
-                for (Task task : matchingDatesList) {
-                    //System.out.println((index++)+"%d: "+task);
-                    System.out.format("%d: " + task.toString() + "\n", index++);
+            if (searchDate != null) {
+                ArrayList<Task> matchingDatesList = Cedar.internalTaskList.stream()
+                        .filter(tasks -> searchDate.equals(tasks.getTemporalLabel()))
+                        .collect(Collectors.toCollection(ArrayList::new));
+                if (matchingDatesList.size() == 0) {
+                    System.out.println("🔎 Search returned 0 hits.");
+                } else {
+                    System.out.format("🔎 Search returned %d hit(s) for \"%s\".\n", matchingDatesList.size(), languageDate);
+                    System.out.println("Here are your results:");
+                    int index = 1;
+                    for (Task task : matchingDatesList) {
+                        //System.out.println((index++)+"%d: "+task);
+                        System.out.format("%d: " + task.toString() + "\n", index++);
+                    }
                 }
+            } else {
+                System.out.println("⚠ Invalid date provided. (Check spelling?)");
             }
             break;
         case "searchtasks":
@@ -165,6 +170,9 @@ public class CliParse {
 
     private static LocalDate naturalLangDateParseHandler(String languageDate) {
         List<Date> dates = new PrettyTimeParser().parse(languageDate);
+        if (dates.size() == 0) {
+            return null;
+        }
         LocalDate date = dates.get(0).toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
         return date;
     }
