@@ -1,8 +1,16 @@
 package cedar;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Writer;
+import java.time.LocalDate;
 import java.util.ArrayList;
 
+import cedar.tasks.LocalDateSerializer;
 import cedar.tasks.Task;
 import cedar.tasks.TaskJsonDeserializer;
 import com.google.gson.Gson;
@@ -23,9 +31,9 @@ public class Cedar {
 
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 
-        File savedUserdata = new File("src/main/userdata/savedTaskList.json");
+        File savedUserdata = new File(SAVED_USERDATA);
         if (savedUserdata.exists() && savedUserdata.isFile() && savedUserdata.length() != 0) {
-            System.out.println("\uD83D\uDCDC Found and loaded previously saved tasklist. " +
+            System.out.println("\uD83D\uDCDC Found and loaded previously saved tasklist (from last session). " +
                     "Type \"nuke\" if you want to erase it.");
             loadSavedTasklist();
         }
@@ -45,5 +53,26 @@ public class Cedar {
 
     public static void setActivityState(boolean state) {
         activityState = state;
+    }
+
+    public static ArrayList<Task> getInternalTaskList() {
+        return internalTaskList;
+    }
+
+    public static void setInternalTaskList(ArrayList<Task> internalTaskList) {
+        Cedar.internalTaskList = internalTaskList;
+    }
+
+    public static void writeInternalListToJsonHandler() {
+        try {
+            Writer writeUserdata = new FileWriter(Cedar.SAVED_USERDATA);
+            Gson dateJsonSerialize = new GsonBuilder().registerTypeAdapter(LocalDate.class, new LocalDateSerializer()).create();
+            dateJsonSerialize.toJson(internalTaskList, writeUserdata);
+            writeUserdata.flush();
+            writeUserdata.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("⚠ Error saving tasklist to disk. Check Logs.");
+        }
     }
 }
